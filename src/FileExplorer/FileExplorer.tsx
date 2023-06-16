@@ -38,7 +38,7 @@ const TreeFolder = ({ folder }: { folder: CollapsibleFolder }) => {
   const isFile = folder.childrens === undefined;
   const isFolder = !isFile;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (!isFolder) return;
 
@@ -107,7 +107,7 @@ function* traverseFromPath(root: CollapsibleFolder, path: string[]) {
 }
 
 const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
-  const { root, setRoot, setActiveFolder, setHistory } = useFileExplorerContext();
+  const { root, setRoot, activeFolder, setActiveFolder, setHistory } = useFileExplorerContext();
 
   const handleClick = () => {
     const clonedRoot = { ...root };
@@ -118,7 +118,7 @@ const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
 
     setActiveFolder(folder);
     setRoot(clonedRoot);
-    setHistory((prevActiveFolder) => [...prevActiveFolder, folder]);
+    setHistory((prevHistory) => [...prevHistory, activeFolder]);
   };
 
   return (
@@ -132,10 +132,24 @@ const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
 };
 
 const IconView = () => {
-  const { activeFolder } = useFileExplorerContext();
+  const { activeFolder, setActiveFolder, history } = useFileExplorerContext();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Backspace") {
+      const newActiveFolder = history.pop();
+
+      if (!newActiveFolder) return;
+
+      setActiveFolder(newActiveFolder);
+    }
+  };
 
   return (
-    <div className="w-full h-full bg-neutral-800 rounded">
+    <div
+      className="w-full h-full bg-neutral-800 rounded focus-visible:outline-none"
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+    >
       <div className="p-2 flex flex-wrap gap-4">
         {activeFolder.childrens?.length ? (
           activeFolder.childrens.map((folder) => {
