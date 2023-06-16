@@ -68,7 +68,7 @@ const TreeFolder = ({ folder }: { folder: CollapsibleFolder }) => {
         <ul>
           {folder.childrens.map((subFolder) => {
             return (
-              <li className="pl-4 border-l border-l-red-500" key={subFolder.title}>
+              <li className={cn("pl-4 border-l border-l-red-500")} key={subFolder.title}>
                 <TreeFolder folder={subFolder} />
               </li>
             );
@@ -109,6 +109,9 @@ function* traverseFromPath(root: CollapsibleFolder, path: string[]) {
 const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
   const { root, setRoot, activeFolder, setActiveFolder, setHistory } = useFileExplorerContext();
 
+  const isFile = folder.childrens === undefined;
+  const isFolder = !isFile;
+
   const handleClick = () => {
     const clonedRoot = { ...root };
 
@@ -122,8 +125,11 @@ const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
   };
 
   return (
-    <div className="w-24 aspect-[5/6] p-2 h-auto flex flex-col gap-1" onDoubleClick={handleClick}>
-      <div className="h-full w-full bg-yellow-300"></div>
+    <div
+      className="w-24 aspect-[5/6] p-2 h-auto flex flex-col gap-1"
+      onDoubleClick={isFolder ? handleClick : undefined}
+    >
+      <div className={cn("h-full w-full bg-yellow-300", isFile && "bg-blue-300")}></div>
       <p className="pl-1 truncate max-w-full" title={folder.title}>
         {folder.title}
       </p>
