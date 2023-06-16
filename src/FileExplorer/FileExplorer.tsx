@@ -1,6 +1,7 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ArrowLeftSquare, File } from "lucide-react";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { cn } from "../lib";
+import openFolderIcon from "/public/openFolder.png";
 
 type Folder = {
   title: string;
@@ -28,7 +29,9 @@ type FileExplorerContext = {
   setHistory: React.Dispatch<React.SetStateAction<CollapsibleFolder[]>>;
 };
 
-const FileExplorerContext = createContext<FileExplorerContext>({} as FileExplorerContext);
+const FileExplorerContext = createContext<FileExplorerContext>(
+  {} as FileExplorerContext
+);
 
 const useFileExplorerContext = () => useContext(FileExplorerContext);
 
@@ -68,7 +71,10 @@ const TreeFolder = ({ folder }: { folder: CollapsibleFolder }) => {
         <ul>
           {folder.childrens.map((subFolder) => {
             return (
-              <li className={cn("pl-4 border-l border-l-red-500")} key={subFolder.title}>
+              <li
+                className={cn("pl-4 border-l border-l-red-500")}
+                key={subFolder.title}
+              >
                 <TreeFolder folder={subFolder} />
               </li>
             );
@@ -107,7 +113,8 @@ function* traverseFromPath(root: CollapsibleFolder, path: string[]) {
 }
 
 const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
-  const { root, setRoot, activeFolder, setActiveFolder, setHistory } = useFileExplorerContext();
+  const { root, setRoot, activeFolder, setActiveFolder, setHistory } =
+    useFileExplorerContext();
 
   const isFile = folder.childrens === undefined;
   const isFolder = !isFile;
@@ -129,8 +136,16 @@ const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
       className="w-24 aspect-[5/6] p-2 h-auto flex flex-col gap-1"
       onDoubleClick={isFolder ? handleClick : undefined}
     >
-      <div className={cn("h-full w-full bg-yellow-300", isFile && "bg-blue-300")}></div>
-      <p className="pl-1 truncate max-w-full" title={folder.title}>
+      {isFolder ? (
+        <img
+          src={openFolderIcon}
+          alt="folder"
+          className="w-full h-full object-contain"
+        />
+      ) : (
+        <File className="w-full h-full" />
+      )}
+      <p className="pl-3 truncate max-w-full" title={folder.title}>
         {folder.title}
       </p>
     </div>
@@ -162,22 +177,32 @@ const IconView = () => {
       onKeyDown={handleKeyDown}
     >
       <div className="p-2 flex flex-wrap gap-4">
-        <button className="disabled:opacity-50" onClick={goToPrevFolder} disabled={history.length <= 0}>
-          Back
+        <button
+          className="disabled:opacity-50 flex"
+          onClick={goToPrevFolder}
+          disabled={history.length <= 0}
+        >
+          <ArrowLeftSquare />
         </button>
         {activeFolder.childrens?.length ? (
           activeFolder.childrens.map((folder) => {
             return <IconFolder folder={folder} key={folder.title} />;
           })
         ) : (
-          <div className="w-full h-full flex items-center justify-center">Folder is empty</div>
+          <div className="w-full h-full flex items-center justify-center">
+            Folder is empty
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-const toCollapsibleFolder = (file: Folder, parentPath = [] as string[], defaultOpen = false): CollapsibleFolder => {
+const toCollapsibleFolder = (
+  file: Folder,
+  parentPath = [] as string[],
+  defaultOpen = false
+): CollapsibleFolder => {
   const collapsible: CollapsibleFolder = {
     ...file,
     path: [...parentPath, file.title],
@@ -202,7 +227,12 @@ const makeRoot = (files: Folder[]) => {
   const title = "__root__" as const;
   const childrens = files.map((subFile) => toCollapsibleFolder(subFile));
 
-  const root = { title, open: true, path: [], childrens } satisfies FileExplorerRoot;
+  const root = {
+    title,
+    open: true,
+    path: [],
+    childrens,
+  } satisfies FileExplorerRoot;
 
   return root as FileExplorerRoot;
 };
@@ -222,7 +252,16 @@ const FileExplorer = ({ files: passedFiles }: { files: Array<Folder> }) => {
   }, [passedFiles]);
 
   return (
-    <FileExplorerContext.Provider value={{ root, setRoot, activeFolder, setActiveFolder, history, setHistory }}>
+    <FileExplorerContext.Provider
+      value={{
+        root,
+        setRoot,
+        activeFolder,
+        setActiveFolder,
+        history,
+        setHistory,
+      }}
+    >
       <div className="flex items-center h-screen">
         <div className="w-96 h-full py-20 px-4">
           <TreeView />
