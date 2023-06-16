@@ -134,13 +134,18 @@ const IconFolder = ({ folder }: { folder: CollapsibleFolder }) => {
 const IconView = () => {
   const { activeFolder, setActiveFolder, history } = useFileExplorerContext();
 
+  const goToPrevFolder = () => {
+    if (!history.length) return;
+    const newActiveFolder = history.pop();
+
+    if (!newActiveFolder) return;
+
+    setActiveFolder(newActiveFolder);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Backspace") {
-      const newActiveFolder = history.pop();
-
-      if (!newActiveFolder) return;
-
-      setActiveFolder(newActiveFolder);
+      goToPrevFolder();
     }
   };
 
@@ -151,6 +156,9 @@ const IconView = () => {
       onKeyDown={handleKeyDown}
     >
       <div className="p-2 flex flex-wrap gap-4">
+        <button className="disabled:opacity-50" onClick={goToPrevFolder} disabled={history.length <= 0}>
+          Back
+        </button>
         {activeFolder.childrens?.length ? (
           activeFolder.childrens.map((folder) => {
             return <IconFolder folder={folder} key={folder.title} />;
